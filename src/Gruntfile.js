@@ -77,19 +77,18 @@ module.exports = function(grunt) {
                      
                     },
                     build: {
-                      src: ['app/scripts/modules/module.js','app/scripts/filters/filter.js','app/scripts/directives/directive.js','app/scripts/services/service.js','.tmp/directivetemplate.js'],
+                      src: ['app/scripts/filters/filter.js','app/scripts/directives/directive.js','app/scripts/services/service.js','.tmp/directivetemplate.js'],
                       dest: '../dist/' + bower.namespace + '.js',
                     },
                 },              
 
-                // The actual grunt server settings
                 connect: {
                     options: {
-                        livereload: 35730
+                        livereload: parseInt(bower.port) + 300
                     },
                     local: {
                         options: {
-                            port: 9090,
+                            port: parseInt(bower.port),
                             hostname: 'localhost',
                             open: true,
                             base: [
@@ -103,13 +102,12 @@ module.exports = function(grunt) {
                                     connect.static(appConfig.app),
                                     connect().use('/bower_components', connect.static('./bower_components'))
                                 ];
-
                             }
                         }
                     },
                     docs: {
                         options: {
-                            port: 9001,
+                            port: parseInt(bower.port) + 200,
                             hostname: 'localhost',
                             base: '../../gh-pages/',
                             open: true
@@ -298,8 +296,6 @@ module.exports = function(grunt) {
             });
 
             grunt.registerTask('default', '', function(target) {
-
-                grunt.file.write('app/scripts/modules/module.js', '(function () { angular.module(\'' + bower.name + '\',[]); })();');
 
                 return grunt.task.run([ 
                     'ngconstant:local',

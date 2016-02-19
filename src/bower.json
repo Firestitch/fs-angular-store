@@ -1,6 +1,7 @@
 {
   "name": "fs-angular-store",
   "namespace": "store",
+  "port": "8001",
   "moduleName": "app",
   "version": "0.0.0",
   "appPath": "app",

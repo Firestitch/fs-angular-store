@@ -17,12 +17,13 @@
 
         this.$get = function($localStorage, $log) {
 
-            var service = {
+            var watches = [], service = {
                 set: set,
                 get: get,
                 reset: reset,
                 remove: remove,
-                display: display
+                display: display,
+                watch: watch
             };
 
             return service;
@@ -46,6 +47,12 @@
                 if (typeof obj === 'object') {
                     // if object is a proper object, process normally
                     angular.forEach(obj, function (val, key) {
+
+                        angular.forEach(watches,function(item) {
+                            if(item.key==key)
+                                item.func(val);
+                        });
+
                         $localStorage[key] = encrypt(val);
 
                     });
@@ -62,6 +69,10 @@
                     });
                 }
             }
+
+            function watch(key, func) {
+                watches.push({ key: key, func: func });
+            }            
 
             function reset() {
                 $localStorage.$reset();
