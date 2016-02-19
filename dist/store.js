@@ -1,3 +1,6 @@
+(function () { angular.module('fs-angular-store',[]); })();
+
+
 (function () {
     'use strict';
 

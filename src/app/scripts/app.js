@@ -8,12 +8,12 @@ angular
     'ngTouch',
     'ngMaterial',
     'ngAnimate',
-    'ngStorage',
-    'mdo-angular-cryptography',
-    'fs-angular-banner',
-    'ngFileUpload'
+    'fs-angular-store'
 ])
-.config(function ($routeProvider, $cryptoProvider, $mdThemingProvider) {
+.config(function ($routeProvider, $mdThemingProvider,fsStoreProvider) {
+
+    //fsStoreProvider.encryption('asdasasdasdad');
+    
     $routeProvider
     .when('/demo', {
         templateUrl: 'views/demo.html',
@@ -28,7 +28,6 @@ angular
         redirectTo: '/demo'
     });
 
-    $cryptoProvider.setCryptographyKey('abc123');
   $mdThemingProvider.definePalette('amazingPaletteName', {
     '50': 'ffebee',
     '100': 'ffcdd2',

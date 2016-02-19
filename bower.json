@@ -1,0 +1,19 @@
+{
+  "name": "fs-angular-store",
+  "description": "",
+  "main": [
+    "dist/store.js"
+  ],
+  "dependencies": {
+    "ngstorage": "0.3.0"
+  },
+  "authors": [
+    "Firestitch Inc."
+  ],
+  "license": "MIT",
+  "ignore": [
+    "src",
+    ".gitignore"
+  ],
+  "private": false
+}
