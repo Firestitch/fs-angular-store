@@ -1,0 +1,29 @@
+<div layout="row" layout-align="start center" style="{{ options.styles }}">
+    <div class="avatar" ng-class="{ clickable: options.avatar.click }" ng-click="click(options.avatar.click, $event)">
+        <md-button ng-show="options.avatar.action.icon" class="md-fab action-icon">
+            <md-icon>{{options.avatar.action.icon}}</md-icon>
+        </md-button>
+        <div class="icon" ng-if="options.avatar.image" style="background-image: url('{{options.avatar.image}}')"></div>
+        <div class="icon" ng-show="!options.avatar.image">
+            <md-icon>{{options.avatar.icon}}</md-icon>
+        </div>
+    </div>
+    <div flex>
+        <div class="headline" ng-if="options.headline.template" fs-banner-bind-compile="options.headline.template" fs-banner-bind-compile-scope="options.headline.scope"></div>
+        <div class="headline" ng-if="!options.headline.template">{{options.headline}}</div>
+        <div ng-if="options.subheadline.template" fs-banner-bind-compile="options.subheadline.template" fs-banner-bind-compile-scope="options.subheadline.scope" class="subheadline"></div>
+        <div class="subheadline" ng-if="!options.subheadline.template">{{options.subheadline}}</div>
+    </div>
+    <div class="actions">
+        <span class="action" ng-repeat="action in options.actions">
+
+            <span ng-if="action.type=='template'" fs-banner-bind-compile="action.template" fs-banner-bind-compile-scope="action.scope"></span>
+            <span ng-if="action.type=='submit' || action.type=='click'">
+                <md-button class="md-fab md-accent" aria-label="Save" type="{{actionType(action)}}" ng-click="actionClick(action, $event)">
+                    <md-icon md-icon-set="material-icons">{{action.icon}}</md-icon>
+                </md-button>
+            </span>
+
+        </span>
+    </div>
+</div>
