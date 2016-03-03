@@ -48,13 +48,12 @@
                     // if object is a proper object, process normally
                     angular.forEach(obj, function (val, key) {
 
+                        $localStorage[key] = encrypt(val);
+
                         angular.forEach(watches,function(item) {
                             if(item.key==key)
                                 item.func(val);
                         });
-
-                        $localStorage[key] = encrypt(val);
-
                     });
                 }
             }
