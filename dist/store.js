@@ -1,6 +1,4 @@
-
-
-(function () {
+(function () {
     'use strict';
 
     angular.module('fs-angular-store',['ngStorage'])
@@ -30,11 +28,17 @@
 
             return service;
 
-            function get(str) {
+            function get(str, def) {                
 
-                var val = decrypt($localStorage[str]);
-                
-                return (typeof val === 'undefined') ? null : val;
+                if(!$localStorage.hasOwnProperty(str) && def!==undefined) {
+                    $localStorage[str] = def;
+                }
+
+                if(_encryption) {
+                    return decrypt($localStorage[str]);
+                }
+                    
+                return $localStorage[str];
             }
 
             function set(obj,value) {
@@ -126,4 +130,3 @@
     });
 
 })();
-
