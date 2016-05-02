@@ -1,3 +1,5 @@
+
+
 (function () {
     'use strict';
 
@@ -15,9 +17,9 @@
             _encryption = true;
         };
 
-        this.$get = function($localStorage, $log) {
+        this.$get = function($localStorage, $log, $rootScope) {
 
-            var watches = [], service = {
+            var service = {
                 set: set,
                 get: get,
                 reset: reset,
@@ -53,15 +55,11 @@
                 if (typeof obj === 'object') {
                     // if object is a proper object, process normally
                     angular.forEach(obj, function (val, key) {
-
-                        $localStorage[key] = encrypt(val);
-
-                        angular.forEach(watches,function(item) {
-                            if(item.key==key)
-                                item.func(val);
-                        });
+                        $localStorage[key] = encrypt(val);                        
                     });
                 }
+
+                return this;
             }
 
             function remove(obj) {
@@ -73,14 +71,22 @@
                         delete $localStorage[value];
                     });
                 }
+                return this;
             }
 
-            function watch(key, func) {
-                watches.push({ key: key, func: func });
-            }            
+            function watch(key, func, deep) {
+
+                $rootScope.$watch(function () { return $localStorage[key]; },function(newVal, oldVal) {
+                    if(oldVal !== undefined) {
+                        func(newVal, oldVal);
+                    }
+                },deep)
+                return this;
+            }
 
             function reset() {
                 $localStorage.$reset();
+                return this;
             }
 
             function encrypt(obj) {

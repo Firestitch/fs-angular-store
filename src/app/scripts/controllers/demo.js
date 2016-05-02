@@ -2,15 +2,32 @@
 
     'use strict';
     angular.module('app')
-    .controller('DemoCtrl', function ($scope, fsStore) {
+    .controller('DemoCtrl', function ($scope, fsStore, $timeout) {
 
     	fsStore.watch('test',function(value) {
-    		
-    	});
+    		debugger;
+    	}, true);
 
-        fsStore.set('test','TEST!');
+    	var test = {};
+        fsStore.set('test',test);
+        fsStore.set('test',"SASDASD");
 
-        alert(fsStore.get('test'));
+        
+        $timeout(function() {
+
+        	//test.hello = "!!!!!";
+
+        },2000);
+
+/*
+
+        $timeout(function() {
+
+        	fsStore.set('test','^^^!!!!');
+        },4000);        
+
+		*/
+        //alert(fsStore.get('test'));
 
     });
 
