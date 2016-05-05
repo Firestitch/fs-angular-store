@@ -75,7 +75,7 @@
             function watch(key, func, deep) {
 
                 $rootScope.$watch(function () { return $localStorage[key]; },function(newVal, oldVal) {
-                    if(oldVal !== undefined) {
+                    if(newVal !== undefined) {
                         func(newVal, oldVal);
                     }
                 },deep)
