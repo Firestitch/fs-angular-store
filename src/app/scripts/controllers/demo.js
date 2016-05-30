@@ -5,12 +5,15 @@
     .controller('DemoCtrl', function ($scope, fsStore, $timeout) {
 
     	fsStore.watch('test',function(value) {
-    		debugger;
+    		//debugger;
     	}, true);
 
     	var test = {};
         fsStore.set('test',test);
         fsStore.set('test',"SASDASD");
+        fsStore.set('test-another',"SASDASD");
+
+        fsStore.reset(['test-another']);
 
         
         $timeout(function() {

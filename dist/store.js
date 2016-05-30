@@ -84,8 +84,17 @@
                 return this;
             }
 
-            function reset() {
-                $localStorage.$reset();
+            function reset(data) {
+
+                if(angular.isArray(data)) {
+
+                    angular.forEach(data,function(item) {
+                        remove(item);
+                    });
+                } else {
+                    $localStorage.$reset();
+                }
+
                 return this;
             }
 
