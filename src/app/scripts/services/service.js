@@ -1,4 +1,6 @@
-(function () {
+
+
+(function () {
     'use strict';
 
     angular.module('fs-angular-store',['ngStorage'])
@@ -6,6 +8,8 @@
 
         var _encryption = false;
         var _cryptokey = 'fs93jd83hf92j2';
+        var _memory = {};
+        var _watches = [];
 
         this.encryption = function(cryptokey) {
             if(cryptokey) {
@@ -28,20 +32,36 @@
 
             return service;
 
-            function get(str, def) {                
+            function get(str, defaults, options) {
+                options = options || {};
 
-                if(!$localStorage.hasOwnProperty(str) && def!==undefined) {
-                    $localStorage[str] = def;
-                }
+                if(options.storage=='memory') {
 
-                if(_encryption) {
-                    return decrypt($localStorage[str]);
+                    if(!_memory.hasOwnProperty(str) && defaults!==undefined) {
+                        _memory[str] = defaults;
+                    }
+
+                    if(_encryption) {
+                        return decrypt(_memory[str]);
+                    }
+
+                    return _memory[str];
+
+                } else {
+                    if(!$localStorage.hasOwnProperty(str) && defaults!==undefined) {
+                        $localStorage[str] = defaults;
+                    }
+
+                    if(_encryption) {
+                        return decrypt($localStorage[str]);
+                    }
+
+                    return $localStorage[str];
                 }
-                    
-                return $localStorage[str];
             }
 
-            function set(obj,value) {
+            function set(obj, value, options) {
+                options = options || {};
 
                 //if both these variables are set then treat as key value pair
                 if(obj && value) {
@@ -53,7 +73,13 @@
                 if (typeof obj === 'object') {
                     // if object is a proper object, process normally
                     angular.forEach(obj, function (val, key) {
-                        $localStorage[key] = encrypt(val);                        
+
+                        if(options.storage===undefined || options.storage=='localstorage') {
+                            $localStorage[key] = encrypt(val);
+                        } else if(options.storage=='memory') {
+                            _memory[key] = encrypt(val);
+                        }
+                        watcher(key,encrypt(val));
                     });
                 }
 
@@ -67,18 +93,48 @@
 
                     angular.forEach(obj,function(value) {
                         delete $localStorage[value];
+
+                        watcher(value);
                     });
                 }
                 return this;
             }
 
-            function watch(key, func, deep) {
+            function watch(key, func, options) {
+                options = options || {};
 
-                $rootScope.$watch(function () { return $localStorage[key]; },function(newVal, oldVal) {
-                    if(newVal !== undefined) {
-                        func(newVal, oldVal);
+                if(options.compare) {
+
+                    $rootScope.$watch(function() {
+
+                        if(options.storage=='memory') {
+                            return _memory[key];
+                        } else {
+                            return $localStorage[key];
+                        }
+
+                    },function(newVal, oldVal) {
+                        if(newVal !== undefined) {
+                            func(newVal, oldVal);
+                        }
+                    },options.compare);
+
+                } else {
+                    _watches.push({ key: key, func: func, options: options });
+                    func(get(key));
+                }
+
+                return this;
+            }
+
+            function watcher(key,value) {
+
+                angular.forEach(_watches,function(watch) {
+                    if(watch.key==key) {
+                        watch.func(value);
                     }
-                },deep)
+                });
+
                 return this;
             }
 
@@ -104,7 +160,7 @@
                         throw 'CryptoJS library not found';
 
                     if(obj) {
-                    
+
                         obj = JSON.stringify(obj);
                         obj = CryptoJS.AES.encrypt(obj, _cryptokey).toString();
                     }
@@ -118,8 +174,8 @@
                 if(_encryption) {
 
                     if(typeof CryptoJS != 'object')
-                        throw 'CryptoJS library not found';                
-                
+                        throw 'CryptoJS library not found';
+
                     if(obj) {
 
                         obj = CryptoJS.AES.decrypt(obj, _cryptokey).toString(CryptoJS.enc.Utf8);
@@ -143,3 +199,4 @@
     });
 
 })();
+
