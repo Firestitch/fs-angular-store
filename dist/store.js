@@ -81,7 +81,10 @@
                         } else if(options.storage=='memory') {
                             _memory[key] = encrypt(val);
                         }
-                        watcher(key,encrypt(val));
+
+                        if(!options.notify) {
+                            watcher(key,encrypt(val));
+                        }
                     });
                 }
 
