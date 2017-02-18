@@ -2,6 +2,8 @@
 
 
 
+
+
 (function () {
     'use strict';
 
@@ -74,16 +76,17 @@
 
                 if (typeof obj === 'object') {
                     // if object is a proper object, process normally
-                    angular.forEach(obj, function (val, key) {
+                    angular.forEach(obj, function (val, name) {
 
+                        var old = get(name);
                         if(options.storage===undefined || options.storage=='localstorage') {
-                            $localStorage[key] = encrypt(val);
+                            $localStorage[name] = encrypt(val);
                         } else if(options.storage=='memory') {
-                            _memory[key] = encrypt(val);
+                            _memory[name] = encrypt(val);
                         }
 
                         if(!options.notify) {
-                            watcher(key,encrypt(val));
+                            watcher(name,val,old);
                         }
                     });
                 }
@@ -91,15 +94,18 @@
                 return this;
             }
 
-            function remove(obj) {
+            function remove(obj,options) {
+                options = options || {};
 
                 if(obj) {
                     obj = typeof obj === 'object' ? obj : [obj];
 
-                    angular.forEach(obj,function(value) {
-                        delete $localStorage[value];
-
-                        watcher(value);
+                    angular.forEach(obj,function(name) {
+                        var old = get(name);
+                        delete $localStorage[name];
+                        if(!options.notify) {
+                            watcher(name,undefined,old);
+                        }
                     });
                 }
                 return this;
@@ -108,39 +114,61 @@
             function watch(key, func, options) {
                 options = options || {};
 
-                if(options.compare) {
+                _watches.push({ key: key, func: func, options: options });
 
-                    $rootScope.$watch(function() {
+                var value = evalulate(get(key.replace(/\..*/,'')),key);
 
-                        if(options.storage=='memory') {
-                            return _memory[key];
-                        } else {
-                            return $localStorage[key];
-                        }
-
-                    },function(newVal, oldVal) {
-                        if(newVal !== undefined) {
-                            func(newVal, oldVal);
-                        }
-                    },options.compare);
-
-                } else {
-                    _watches.push({ key: key, func: func, options: options });
-                    func(get(key));
-                }
+                func(value);
 
                 return this;
             }
 
-            function watcher(key,value) {
+            function watcher(key,value,old) {
 
                 angular.forEach(_watches,function(watch) {
-                    if(watch.key==key) {
-                        watch.func(value);
+
+                    if(watch.key.match(new RegExp('^' + key))) {
+
+                        var v1 = evalulate(value, watch.key);
+                        var v2 = evalulate(old, watch.key);
+
+                        if(v1!==v2) {
+                            watch.func(v1,v2);
+                        }
                     }
                 });
 
                 return this;
+            }
+
+            function evalulate(data, path, step) {
+
+                if(!step) {
+                    step = 0;
+                }
+
+                if(!step) {
+                    path = path.split('.');
+                    path.shift();
+                }
+
+                var item = path.shift();
+
+                if(item===undefined)
+                    return data;
+
+                try {
+                    var data = data[item];
+                    if(data===undefined)
+                        throw 'undefined';
+
+                } catch(e) {
+                    return undefined;
+                }
+
+                step++;
+
+                return evalulate(data,path,step);
             }
 
             function reset(data) {
@@ -204,4 +232,5 @@
     });
 
 })();
+
 
