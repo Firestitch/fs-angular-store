@@ -132,7 +132,7 @@
                         var v1 = evalulate(value, watch.key);
                         var v2 = evalulate(old, watch.key);
 
-                        if(v1!==v2) {
+                        if(!angular.equals(v1,v2)) {
                             watch.func(v1,v2);
                         }
                     }
