@@ -1,27 +1,24 @@
-
-
-
-
-(function () {
+(function () {
     'use strict';
 
-    angular.module('fs-angular-store',['ngStorage'])
+    angular.module('fs-angular-store',['ngStorage','fs-angular-util'])
     .provider('fsStore', function() {
 
-        var _encryption = false;
-        var _cryptokey = 'fs93jd83hf92j2';
-        var _memory = {};
-        var _watches = [];
+        var self = {    encryption: false,
+                        cryptokey: 'fs93jd83hf92j2',
+                        memory: {},
+                        wathers: []
+                    };
 
         this.encryption = function(cryptokey) {
             if(cryptokey) {
-                _cryptokey = cryptokey;
+                self.cryptokey = cryptokey;
             }
 
-            _encryption = true;
+            self.encryption = true;
         };
 
-        this.$get = function($localStorage, $log, $rootScope) {
+        this.$get = function($localStorage, $log, $rootScope, fsUtil) {
 
             var service = {
                 set: set,
@@ -39,22 +36,22 @@
 
                 if(options.storage=='memory') {
 
-                    if(!_memory.hasOwnProperty(str) && defaults!==undefined) {
-                        _memory[str] = defaults;
+                    if(!self.memory.hasOwnProperty(str) && defaults!==undefined) {
+                        self.memory[str] = defaults;
                     }
 
-                    if(_encryption) {
-                        return decrypt(_memory[str]);
+                    if(self.encryption) {
+                        return decrypt(self.memory[str]);
                     }
 
-                    return _memory[str];
+                    return self.memory[str];
 
                 } else {
                     if(!$localStorage.hasOwnProperty(str) && defaults!==undefined) {
                         $localStorage[str] = defaults;
                     }
 
-                    if(_encryption) {
+                    if(self.encryption) {
                         return decrypt($localStorage[str]);
                     }
 
@@ -80,7 +77,7 @@
                         if(options.storage===undefined || options.storage=='localstorage') {
                             $localStorage[name] = encrypt(val);
                         } else if(options.storage=='memory') {
-                            _memory[name] = encrypt(val);
+                            self.memory[name] = encrypt(val);
                         }
 
                         if(!options.notify) {
@@ -112,7 +109,7 @@
             function watch(key, func, options) {
                 options = options || {};
 
-                _watches.push({ key: key, func: func, options: options });
+                self.wathers.push({ key: key, func: func, options: options });
 
                 var value = evalulate(get(key.replace(/\..*/,'')),key);
 
@@ -123,8 +120,8 @@
 
             function watcher(key,value,old) {
 
-                angular.forEach(_watches,function(watch) {
-
+                angular.forEach(self.wathers,function(watch) {
+                    //Not sure what the ^ regex is for? Possibly a namespace or nested variable? user.something?
                     if(watch.key.match(new RegExp('^' + key))) {
 
                         var v1 = evalulate(value, watch.key);
@@ -171,12 +168,19 @@
 
             function reset(data) {
 
-                if(angular.isArray(data)) {
+                if(fsUtil.isArray(data)) {
 
                     angular.forEach(data,function(item) {
                         remove(item);
                     });
+
                 } else {
+
+                    //loop through the registered watchers and remove trigger final notifies
+                    angular.forEach(self.wathers,function(watch) {
+                        remove(watch.key);
+                    });
+
                     $localStorage.$reset();
                 }
 
@@ -185,7 +189,7 @@
 
             function encrypt(obj) {
 
-                if(_encryption) {
+                if(self.encryption) {
 
                     if(typeof CryptoJS != 'object')
                         throw 'CryptoJS library not found';
@@ -193,7 +197,7 @@
                     if(obj) {
 
                         obj = JSON.stringify(obj);
-                        obj = CryptoJS.AES.encrypt(obj, _cryptokey).toString();
+                        obj = CryptoJS.AES.encrypt(obj, self.cryptokey).toString();
                     }
                 }
 
@@ -202,14 +206,14 @@
 
             function decrypt(obj) {
 
-                if(_encryption) {
+                if(self.encryption) {
 
                     if(typeof CryptoJS != 'object')
                         throw 'CryptoJS library not found';
 
                     if(obj) {
 
-                        obj = CryptoJS.AES.decrypt(obj, _cryptokey).toString(CryptoJS.enc.Utf8);
+                        obj = CryptoJS.AES.decrypt(obj, self.cryptokey).toString(CryptoJS.enc.Utf8);
                         obj = JSON.parse(obj);
                     }
                 }
@@ -228,7 +232,4 @@
 
         };
     });
-
 })();
-
-
