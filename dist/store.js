@@ -26,7 +26,8 @@
                 reset: reset,
                 remove: remove,
                 display: display,
-                watch: watch
+                watch: watch,
+                trigger: trigger
             };
 
             return service;
@@ -113,7 +114,7 @@
 
                 var value = evalulate(get(key.replace(/\..*/,'')),key);
 
-                func(value);
+                func(value,undefined);
 
                 return this;
             }
@@ -134,6 +135,14 @@
                 });
 
                 return this;
+            }
+
+            function trigger(key,old) {
+            	angular.forEach(self.wathers,function(watch) {
+            		if(watch.key.match(new RegExp('^' + key))) {
+				       watch.func(get(key),old);
+                    }
+            	});
             }
 
             function evalulate(data, path, step) {
